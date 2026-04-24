@@ -1,4 +1,5 @@
 import datetime
+import logging
 from datetime import timedelta
 import requests
 from core.ports import PriceProvider
@@ -10,12 +11,16 @@ class MoexPriceProvider(PriceProvider):
                           date_to=datetime.date.today(),
                           interval=24):
         """Возвращает последнюю цену закрытия"""
-        j = requests.get(
-            f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock}/candles.json?from={date_from}&till'
-            f'={date_to}&interval={interval}').json()
+        try:
+            j = requests.get(
+                f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock}/candles.json?from={date_from}&till'
+                f'={date_to}&interval={interval}').json()
 
-        data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1]['close']
-        return data
+            data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1]['close']
+            return data
+        except IndexError as e:
+            logging.error(f"get_current_price {e}")
+            return None
 
     def _get_current_closes(self, stock, hours):
         date_from = datetime.date.today() - timedelta(days=1)  # запас на вчера
@@ -46,5 +51,3 @@ class MoexPriceProvider(PriceProvider):
         closes = self._get_current_closes(stock, hours)
 
         return min(closes) if closes else None
-
-
