@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
+from loguru import logger
 
 from infrastructure.database.models import User
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
@@ -16,9 +17,11 @@ class CommandRouter:
         self.router.message(CommandStart())(self.command_start)
 
     async def command_start(self, message: Message):
+        logger.debug("Выполнена команда /start")
         user = User(
             telegram_id=str(message.chat.id),
             telegram_name=str(message.chat.first_name),
         )
         await self.user_repository.create_user(user=user)
+        logger.debug("Пользователь успешно зарегистрирован")
         await message.answer('Hello, user!')

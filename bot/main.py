@@ -1,13 +1,12 @@
 import asyncio
-import logging
 import os
-import sys
 
 # aigoram deps
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
+from loguru import logger
 
 # handlers
 from bot.handlers.commands import CommandRouter
@@ -41,9 +40,12 @@ notifier = TelegramNotifier()
 
 
 async def main() -> None:
+    logger.debug("Инициализация приложения...")
+    logger.debug("Создаём таблицы...")
     await db.create_tables()
     session = await db.get_session()
 
+    logger.debug("Подтягиваем зависимости...")
     # Repositories
     user_repository = SQLAlchemyUserRepository(session)
 
@@ -60,6 +62,7 @@ async def main() -> None:
     dp.include_router(position_handler.router)
     dp.include_router(report_handler.router)
 
+    logger.debug("Запускаем рассылатель....")
     # Рассылатель
     scheduler = ReportScheduler(
         bot=bot,
@@ -71,9 +74,19 @@ async def main() -> None:
 
     asyncio.create_task(scheduler.start())
 
+    logger.debug("Запускаем цикл бота...")
     await dp.start_polling(bot)
+    logger.debug("Приложение запущено!")
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    logger.remove()
+    logger.add("logs/bot_{time}.log", rotation="10 MB", retention='7 days',
+               format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+               level="INFO")
+    logger.add("logs/bot_{time:YYYY-MM-DD}.log",
+               rotation="10 MB",
+               retention="7 days",
+               format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+               level="DEBUG")
     asyncio.run(main())

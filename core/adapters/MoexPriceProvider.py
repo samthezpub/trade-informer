@@ -3,6 +3,7 @@ import logging
 from datetime import timedelta
 
 import requests
+from loguru import logger
 
 from core.ports import PriceProvider
 
@@ -21,7 +22,7 @@ class MoexPriceProvider(PriceProvider):
             data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1]['close']
             return data
         except IndexError as e:
-            logging.error(f"get_current_price {e}")
+            logger.info(f"get_current_price {e}")
             return None
 
     def _get_current_closes(self, stock, hours):

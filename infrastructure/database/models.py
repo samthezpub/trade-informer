@@ -35,3 +35,7 @@ class Stock(Base):
     user: Mapped[User] = relationship(
         back_populates="stocks"
     )
+
+    def __repr__(self):
+        return (f"<Stock id={self.id}, ticket={self.ticket}, count={self.count}, buy_price={self.buy_price}, "
+                f"take_profit={self.take_profit}, stop_loss={self.stop_loss}, user_id={self.user_id} >")
