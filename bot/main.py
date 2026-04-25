@@ -12,6 +12,7 @@ from loguru import logger
 from bot.handlers.commands import CommandRouter
 from bot.handlers.position import PositionHandler
 from bot.handlers.reports import ReportHandler
+from bot.middlewares.ThrottlingMidleware import ThrottlingMiddleware
 from bot.schedulers.report_scheduler import ReportScheduler
 from core.adapters.MoexPriceProvider import MoexPriceProvider
 from core.adapters.TelegramNotifier import TelegramNotifier
@@ -27,6 +28,10 @@ bot_token = os.getenv('BOT_TOKEN')
 db_path = os.getenv('DB_PATH')
 notify_interval = int(os.getenv('NOTIFY_INTERVAL_SECS'))
 
+# constants rate limit
+time_for_update_limit_in_secs = int(os.getenv('TIME_FOR_UPDATE_LIMIT_IN_SECS'))
+requests_per_limit = int(os.getenv('REQUEST_PER_LIMIT'))
+
 if not bot_token:
     raise ValueError('BOT_TOKEN is not set')
 if not db_path:
@@ -41,8 +46,7 @@ notifier = TelegramNotifier()
 
 async def main() -> None:
     logger.debug("Инициализация приложения...")
-    logger.debug("Создаём таблицы...")
-    await db.create_tables()
+    logger.debug("Создаём сессию...")
     session = await db.get_session()
 
     logger.debug("Подтягиваем зависимости...")
@@ -56,6 +60,14 @@ async def main() -> None:
     command_router = CommandRouter(user_repository=user_repository)
     position_handler = PositionHandler(monitor, telegram_notifier=notifier, user_repository=user_repository)
     report_handler = ReportHandler(position_monitor=monitor, notifier=notifier, user_repository=user_repository)
+
+    # middlewares
+    command_router.router.message.middleware(ThrottlingMiddleware(
+        time_for_update_limit=time_for_update_limit_in_secs, requests_per_limit=requests_per_limit))
+    position_handler.router.message.middleware(ThrottlingMiddleware(time_for_update_limit=time_for_update_limit_in_secs,
+                                                                    requests_per_limit=requests_per_limit))
+    report_handler.router.message.middleware(ThrottlingMiddleware(time_for_update_limit=time_for_update_limit_in_secs,
+                                                                  requests_per_limit=requests_per_limit))
 
     # Инклюды
     dp.include_router(command_router.router)
