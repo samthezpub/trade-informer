@@ -43,7 +43,10 @@ class PositionHandler:
                                  "через точку.")
             return
 
-        result = self.position_monitor.check_position_pnl(stock, buy_price, stock_count, take_profit, stop_loss)
+        result = self.position_monitor.check_position_pnl(stock=stock, your_buy_price=buy_price,
+                                                          stock_count=stock_count,
+                                                          growth_threshold=take_profit,
+                                                          loss_threshold=stop_loss)
         if result:
             stock_dict = {'ticket': stock, 'buy_price': buy_price, 'count': stock_count, 'take_profit': take_profit,
                           'stop_loss': stop_loss}

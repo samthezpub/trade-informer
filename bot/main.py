@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from bot.handlers.commands import CommandRouter
 from bot.handlers.position import PositionHandler
 from bot.handlers.reports import ReportHandler
+from bot.schedulers.report_scheduler import ReportScheduler
 from core.adapters.MoexPriceProvider import MoexPriceProvider
 from core.adapters.TelegramNotifier import TelegramNotifier
 from core.services.PositionMonitor import PositionMonitor
@@ -25,6 +26,7 @@ load_dotenv()
 # constants
 bot_token = os.getenv('BOT_TOKEN')
 db_path = os.getenv('DB_PATH')
+notify_interval = int(os.getenv('NOTIFY_INTERVAL_SECS'))
 
 if not bot_token:
     raise ValueError('BOT_TOKEN is not set')
@@ -57,6 +59,17 @@ async def main() -> None:
     dp.include_router(command_router.router)
     dp.include_router(position_handler.router)
     dp.include_router(report_handler.router)
+
+    # Рассылатель
+    scheduler = ReportScheduler(
+        bot=bot,
+        monitor=monitor,
+        notifier=notifier,
+        user_repo=user_repository,
+        interval_seconds=notify_interval,
+    )
+
+    asyncio.create_task(scheduler.start())
 
     await dp.start_polling(bot)
 

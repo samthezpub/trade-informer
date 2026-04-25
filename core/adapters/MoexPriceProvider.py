@@ -15,7 +15,7 @@ class MoexPriceProvider(PriceProvider):
         """Возвращает последнюю цену закрытия"""
         try:
             j = requests.get(
-                f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock}/candles.json?from={date_from}&till'
+                f'https://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock}/candles.json?from={date_from}&till'
                 f'={date_to}&interval={interval}').json()
 
             data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1]['close']

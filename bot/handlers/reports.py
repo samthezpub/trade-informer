@@ -26,8 +26,9 @@ class ReportHandler:
         results = []
 
         for stock in stocks:
-            result = self.position_monitor.check_position_pnl(stock.id, stock.ticket, stock.buy_price, stock.count,
-                                                              stock.take_profit, stock.stop_loss)
+            result = self.position_monitor.check_position_pnl(stock_id=stock.id, stock=stock.ticket,
+                                                              your_buy_price=stock.buy_price, stock_count=stock.count,
+                                                              growth_threshold=stock.take_profit, loss_threshold=stock.stop_loss)
             if result:
                 results.append(result)
             else:

@@ -21,6 +21,12 @@ class SQLAlchemyUserRepository:
         await self.session.refresh(user)
         return user
 
+    async def get_all_users(self) -> List[User]:
+        stmt = select(User).order_by(User.telegram_id)
+        result = await self.session.execute(stmt)
+        users = result.scalars().all()
+        return list(users)
+
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
         """Возвращает пользователя по id. Если не находит возвращает None. Требует проверки на None."""
         stmt = select(User).where(User.id == user_id)

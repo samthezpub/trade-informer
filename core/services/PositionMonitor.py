@@ -46,9 +46,10 @@ class PositionMonitor:
             }
         return {'signal': False, 'current_price': current}
 
-    def check_position_pnl(self, stock_id, stock, your_buy_price: float, stock_count: int,
+    def check_position_pnl(self, stock: str, your_buy_price: float, stock_count: int,
                            growth_threshold: float = 0.5,
-                           loss_threshold: float = 1.0):
+                           loss_threshold: float = 1.0,
+                           stock_id: int = None):
         """
         Проверяет доходность/убыток позиции относительно ВАШЕЙ цены покупки.
         """
@@ -67,8 +68,7 @@ class PositionMonitor:
         elif pnl_pct <= -loss_threshold:
             signal_type = 'STOP_LOSS'
 
-        return {
-            'stock_id': stock_id,
+        result = {
             'signal': signal_type is not None,
             'type': signal_type,
             'current_price': current,
@@ -78,3 +78,6 @@ class PositionMonitor:
             'pnl_pct': round(pnl_pct, 2),
             'stock': stock,
         }
+        if stock_id is not None:
+            result['stock_id'] = stock_id
+        return result

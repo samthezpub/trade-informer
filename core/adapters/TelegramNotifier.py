@@ -12,14 +12,14 @@ class TelegramNotifier:
         total_difference = 0  # Общий P&L
 
         for pos in report:
-            stock_id = pos['stock_id']
-            stock = pos['stock']
-            current_price = pos['current_price']
-            your_price = pos['your_price']
-            pnl_pct = pos['pnl_pct']
-            difference = pos['difference']
-            count = pos['count']
-            signal_type = pos['type']
+            stock = pos.get('stock', '???')
+            stock_id = pos.get('stock_id')
+            current_price = pos.get('current_price', 0)
+            your_price = pos.get('your_price', 0)
+            pnl_pct = pos.get('pnl_pct', 0)
+            difference = pos.get('difference', 0)
+            count = pos.get('count', 0)
+            signal_type = pos.get('type')
 
             # Определяем эмодзи для типа сигнала
             if signal_type == 'TAKE_PROFIT':
@@ -35,9 +35,12 @@ class TelegramNotifier:
             # Определяем знак для разницы
             sign = "+" if difference >= 0 else ""
 
-            # Добавляем блок по каждой позиции
+            if stock_id is not None:
+                report_lines.append(f"{emoji} <b>{stock}</b> (ID: {stock_id}) ({count} шт.)\n")
+            else:
+                report_lines.append(f"{emoji} <b>{stock}</b> ({count} шт.)\n")
+
             report_lines.append(
-                f"{emoji} <b>{stock}</b> (ID: {stock_id}) ({count} шт.)\n"
                 f"   Вход: {your_price:.2f} ₽ → Тек: {current_price:.2f} ₽\n"
                 f"   P&L: {sign}{difference:.2f} ₽ ({sign}{pnl_pct:.2f}%)\n"
                 f"   Статус: {signal_text}\n"
