@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from infrastructure.database.models import Base
 from core.ports import DatabaseManager
+from infrastructure.database.models import Base
 
 
 class PostgreSQLDatabase(DatabaseManager):

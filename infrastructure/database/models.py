@@ -21,6 +21,7 @@ class User(Base):
     def __repr__(self):
         return f"<User {self.id}, {self.telegram_name}, {self.telegram_id}>"
 
+
 class Stock(Base):
     __tablename__ = 'stock'
     id: Mapped[int] = Column(BigInteger, primary_key=True)
@@ -30,9 +31,7 @@ class Stock(Base):
     take_profit = Column(Float)
     stop_loss = Column(Float)
 
-    user_id : Mapped[int] = Column(BigInteger, ForeignKey('user_account.id'))
-    user : Mapped[User] = relationship(
+    user_id: Mapped[int] = Column(BigInteger, ForeignKey('user_account.id'))
+    user: Mapped[User] = relationship(
         back_populates="stocks"
     )
-
-

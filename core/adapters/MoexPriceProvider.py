@@ -1,7 +1,9 @@
 import datetime
 import logging
 from datetime import timedelta
+
 import requests
+
 from core.ports import PriceProvider
 
 

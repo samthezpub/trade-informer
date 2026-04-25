@@ -9,7 +9,8 @@ from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
 
 
 class ReportHandler:
-    def __init__(self, position_monitor: PositionMonitor, notifier: TelegramNotifier, user_repository : SQLAlchemyUserRepository):
+    def __init__(self, position_monitor: PositionMonitor, notifier: TelegramNotifier,
+                 user_repository: SQLAlchemyUserRepository):
         self.position_monitor = position_monitor
         self.notifier = notifier
         self.router = Router()

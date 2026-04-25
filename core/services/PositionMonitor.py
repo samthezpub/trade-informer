@@ -1,5 +1,3 @@
-from core.adapters import MoexPriceProvider
-
 class PositionMonitor:
     def __init__(self, price_provider):
         self.price_provider = price_provider
@@ -21,7 +19,7 @@ class PositionMonitor:
                 'max_price': max_price,
                 'drawdown_pct': round(drawdown_pct, 2),
                 'stock': stock,
-                }
+            }
         return {'signal': False, 'current_price': current}
 
     def check_growth(self, stock, growth_threshold=0.5, hours=24):
@@ -48,8 +46,9 @@ class PositionMonitor:
             }
         return {'signal': False, 'current_price': current}
 
-    def check_position_pnl(self, stock_id, stock, your_buy_price:float, stock_count:int, growth_threshold:float=0.5,
-                           loss_threshold:float=1.0):
+    def check_position_pnl(self, stock_id, stock, your_buy_price: float, stock_count: int,
+                           growth_threshold: float = 0.5,
+                           loss_threshold: float = 1.0):
         """
         Проверяет доходность/убыток позиции относительно ВАШЕЙ цены покупки.
         """

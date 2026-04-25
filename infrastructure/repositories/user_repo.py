@@ -85,4 +85,3 @@ class SQLAlchemyUserRepository:
 
         await self.session.delete(stock)
         await self.session.commit()
-

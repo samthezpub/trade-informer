@@ -1,26 +1,22 @@
 import asyncio
 import logging
+import os
 import sys
 
-from core.adapters.MoexPriceProvider import MoexPriceProvider
-from core.services.PositionMonitor import PositionMonitor
-from core.adapters.TelegramNotifier import TelegramNotifier
-from dotenv import load_dotenv
-import os
-
 # aigoram deps
-from aiogram import Bot, Dispatcher, html
+from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+from dotenv import load_dotenv
 
 # handlers
 from bot.handlers.commands import CommandRouter
 from bot.handlers.position import PositionHandler
 from bot.handlers.reports import ReportHandler
+from core.adapters.MoexPriceProvider import MoexPriceProvider
+from core.adapters.TelegramNotifier import TelegramNotifier
+from core.services.PositionMonitor import PositionMonitor
 from infrastructure.database.adapters.postgresql_database import PostgreSQLDatabase
-
 # db
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
 
