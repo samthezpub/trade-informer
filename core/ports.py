@@ -15,3 +15,16 @@ class PriceProvider(ABC):
     def get_min_price_for_period(self, stock:str, hours:int):
         pass
 
+
+class DatabaseManager(ABC):
+    @abstractmethod
+    async def create_tables(self):
+        pass
+
+    @abstractmethod
+    async def get_session(self):
+        pass
+
+    @abstractmethod
+    async def close(self):
+        pass

@@ -12,6 +12,7 @@ class TelegramNotifier:
         total_difference = 0  # Общий P&L
 
         for pos in report:
+            stock_id = pos['stock_id']
             stock = pos['stock']
             current_price = pos['current_price']
             your_price = pos['your_price']
@@ -36,7 +37,7 @@ class TelegramNotifier:
 
             # Добавляем блок по каждой позиции
             report_lines.append(
-                f"{emoji} <b>{stock}</b> ({count} шт.)\n"
+                f"{emoji} <b>{stock}</b> (ID: {stock_id}) ({count} шт.)\n"
                 f"   Вход: {your_price:.2f} ₽ → Тек: {current_price:.2f} ₽\n"
                 f"   P&L: {sign}{difference:.2f} ₽ ({sign}{pnl_pct:.2f}%)\n"
                 f"   Статус: {signal_text}\n"

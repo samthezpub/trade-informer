@@ -5,25 +5,28 @@ from aiogram.types import Message
 
 from core.adapters.TelegramNotifier import TelegramNotifier
 from core.services.PositionMonitor import PositionMonitor
+from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
 
 
 class ReportHandler:
-    def __init__(self, position_monitor: PositionMonitor, notifier: TelegramNotifier):
+    def __init__(self, position_monitor: PositionMonitor, notifier: TelegramNotifier, user_repository : SQLAlchemyUserRepository):
         self.position_monitor = position_monitor
         self.notifier = notifier
         self.router = Router()
+        self.user_repository = user_repository
         self._register_handlers()
 
     def _register_handlers(self):
         self.router.message(Command(commands=['report']))(self.generate_report)
 
     async def generate_report(self, message: Message):
-        # TODO брать из бдшки акции юзера
-        stocks = ["SBER", "VTBR"]
+        chat_id = str(message.chat.id)
+        stocks = await self.user_repository.get_user_stocks_by_telegram_id(telegram_id=chat_id)
         results = []
 
         for stock in stocks:
-            result = self.position_monitor.check_position_pnl(stock, 10.1, 1, 5, 1)
+            result = self.position_monitor.check_position_pnl(stock.id, stock.ticket, stock.buy_price, stock.count,
+                                                              stock.take_profit, stock.stop_loss)
             if result:
                 results.append(result)
             else:
