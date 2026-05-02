@@ -7,6 +7,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./logs:/app/logs  # Копируем логи из контейнера на ПК
+
   db:
     image: postgres:16-alpine
     environment:
