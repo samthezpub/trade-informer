@@ -1,5 +1,6 @@
 import asyncio
 import os
+import subprocess
 
 # aigoram deps
 from aiogram import Bot, Dispatcher
@@ -92,6 +93,7 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
+    subprocess.run(["alembic", "upgrade", "head"], check=True)
     logger.remove()
     logger.add("logs/bot_{time}.log", rotation="10 MB", retention='7 days',
                format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",

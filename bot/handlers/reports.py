@@ -28,6 +28,11 @@ class ReportHandler:
         stocks = await self.user_repository.get_user_stocks_by_telegram_id(telegram_id=chat_id)
         results = []
 
+        if not stocks:
+            await message.answer("Нет активных позиций для отображения.")
+            logger.debug("По позициям пользователя нет результатов. Рекомендуется проверка")
+            return
+
         for stock in stocks:
             logger.debug("Запрашиваем расчёт и текущую цену.")
             result = self.position_monitor.check_position_pnl(stock_id=stock.id, stock=stock.ticket,
