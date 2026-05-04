@@ -1,6 +1,6 @@
 import pytest
 
-from core.services.PositionMonitor import PositionMonitor
+from core.services.position_monitor import PositionMonitor
 from tests.mocks.mock_price_provider import MockPriceProvider
 
 mock_price_provider = MockPriceProvider()

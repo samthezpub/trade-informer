@@ -4,8 +4,8 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from loguru import logger
 
-from core.adapters.TelegramNotifier import TelegramNotifier
-from core.services.PositionMonitor import PositionMonitor
+from core.adapters.telegram_notifier import TelegramNotifier
+from core.services.position_monitor import PositionMonitor
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
 
 

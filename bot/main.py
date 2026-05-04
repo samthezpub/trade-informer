@@ -13,11 +13,11 @@ from loguru import logger
 from bot.handlers.commands import CommandRouter
 from bot.handlers.position import PositionHandler
 from bot.handlers.reports import ReportHandler
-from bot.middlewares.ThrottlingMidleware import ThrottlingMiddleware
+from bot.middlewares.throttling_midleware import ThrottlingMiddleware
 from bot.schedulers.report_scheduler import ReportScheduler
-from core.adapters.MoexPriceProvider import MoexPriceProvider
-from core.adapters.TelegramNotifier import TelegramNotifier
-from core.services.PositionMonitor import PositionMonitor
+from core.adapters.moex_price_provider import MoexPriceProvider
+from core.adapters.telegram_notifier import TelegramNotifier
+from core.services.position_monitor import PositionMonitor
 from infrastructure.database.adapters.postgresql_database import PostgreSQLDatabase
 # db
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
