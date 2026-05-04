@@ -52,7 +52,7 @@ class ReportScheduler:
                 logger.debug(f"Получили позиции пользователя {user} {positions}")
                 results = []
                 for pos in positions:
-                    result = self.monitor.check_position_pnl(
+                    result = await self.monitor.check_position_pnl(
                         stock=pos.ticket,
                         your_buy_price=pos.buy_price,
                         stock_count=pos.count,

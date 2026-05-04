@@ -2,10 +2,10 @@ class PositionMonitor:
     def __init__(self, price_provider):
         self.price_provider = price_provider
 
-    def check_drawdown(self, stock, drop_threshold=0.5, hours=24):
+    async def check_drawdown(self, stock, drop_threshold=0.5, hours=24):
         """Проверяет, упала ли цена на drop_threshold% от максимума за hours часов"""
-        current = self.price_provider.get_current_price(stock)
-        max_price = self.price_provider.get_max_price_for_period(stock, hours)
+        current = await self.price_provider.get_current_price(stock)
+        max_price = await self.price_provider.get_max_price_for_period(stock, hours)
 
         if not max_price or not current:
             return None
@@ -22,13 +22,13 @@ class PositionMonitor:
             }
         return {'signal': False, 'current_price': current}
 
-    def check_growth(self, stock, growth_threshold=0.5, hours=24):
+    async def check_growth(self, stock, growth_threshold=0.5, hours=24):
         """
         Проверяет, выросла ли цена на growth_threshold%
         от МИНИМУМА за последние hours часов.
         """
-        current = self.price_provider.get_current_price(stock)
-        min_price = self.price_provider.get_min_price_for_period(stock, hours)
+        current = await self.price_provider.get_current_price(stock)
+        min_price = await self.price_provider.get_min_price_for_period(stock, hours)
 
         if not min_price or not current:
             return None
@@ -46,14 +46,14 @@ class PositionMonitor:
             }
         return {'signal': False, 'current_price': current}
 
-    def check_position_pnl(self, stock: str, your_buy_price: float, stock_count: int,
+    async def check_position_pnl(self, stock: str, your_buy_price: float, stock_count: int,
                            growth_threshold: float = 0.5,
                            loss_threshold: float = 1.0,
                            stock_id: int = None):
         """
         Проверяет доходность/убыток позиции относительно ВАШЕЙ цены покупки.
         """
-        current = self.price_provider.get_current_price(stock)
+        current = await self.price_provider.get_current_price(stock)
         if not current:
             return None
 

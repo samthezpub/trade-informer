@@ -2,6 +2,7 @@ import datetime
 import logging
 from datetime import timedelta
 
+import httpx
 import requests
 from loguru import logger
 
@@ -9,15 +10,18 @@ from core.ports import PriceProvider
 
 
 class MoexPriceProvider(PriceProvider):
+    def __init__(self):
+        self.client = httpx.AsyncClient()
 
-    def get_current_price(self, stock, date_from=datetime.date.today() - timedelta(days=1),
-                          date_to=datetime.date.today(),
-                          interval=24):
+    async def get_current_price(self, stock, date_from=datetime.date.today() - timedelta(days=1),
+                                date_to=datetime.date.today(),
+                                interval=24):
         """Возвращает последнюю цену закрытия"""
         try:
-            j = requests.get(
+            result = await self.client.get(
                 f'https://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock}/candles.json?from={date_from}&till'
-                f'={date_to}&interval={interval}').json()
+                f'={date_to}&interval={interval}')
+            j = result.json()
 
             data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1]['close']
             return data
@@ -25,14 +29,16 @@ class MoexPriceProvider(PriceProvider):
             logger.info(f"get_current_price {e}")
             return None
 
-    def _get_current_closes(self, stock, hours):
+    async def _get_current_closes(self, stock, hours):
         date_from = datetime.date.today() - timedelta(days=1)  # запас на вчера
         date_to = datetime.date.today()
 
-        j = requests.get(
+        result = await self.client.get(
             f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{stock}/candles.json?'
             f'from={date_from}&till={date_to}&interval=60'  # 60 минут
-        ).json()
+        )
+
+        j = result.json()
 
         if not j['candles']['data']:
             return None
@@ -43,14 +49,14 @@ class MoexPriceProvider(PriceProvider):
 
         return closes
 
-    def get_max_price_for_period(self, stock, hours=24):
+    async def get_max_price_for_period(self, stock, hours=24):
         """Возвращает максимальную цену закрытия за последние N часов."""
 
-        closes = self._get_current_closes(stock, hours)
+        closes = await self._get_current_closes(stock, hours)
         return max(closes) if closes else None
 
-    def get_min_price_for_period(self, stock, hours=24):
+    async def get_min_price_for_period(self, stock, hours=24):
         """Возвращает минимальную цену закрытия за последние N часов."""
-        closes = self._get_current_closes(stock, hours)
+        closes = await self._get_current_closes(stock, hours)
 
         return min(closes) if closes else None

@@ -35,7 +35,7 @@ class ReportHandler:
 
         for stock in stocks:
             logger.debug("Запрашиваем расчёт и текущую цену.")
-            result = self.position_monitor.check_position_pnl(stock_id=stock.id, stock=stock.ticket,
+            result = await self.position_monitor.check_position_pnl(stock_id=stock.id, stock=stock.ticket,
                                                               your_buy_price=stock.buy_price, stock_count=stock.count,
                                                               growth_threshold=stock.take_profit,
                                                               loss_threshold=stock.stop_loss)

@@ -1,0 +1,5 @@
+# Позволяет находить тесты правильно и использовать pytest через cli
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
