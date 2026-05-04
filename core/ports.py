@@ -61,3 +61,12 @@ class UserRepository(ABC):
     @abstractmethod
     async def remove_stock_from_user_by_telegram_id(self, telegram_id: str, stock_id: int) -> Optional[User]:
         pass
+
+
+class CacheProvider(ABC):
+    @abstractmethod
+    def get(self, key: str) -> Optional[dict]:
+        pass
+    @abstractmethod
+    def set(self, key: str, value: dict) -> None:
+        pass

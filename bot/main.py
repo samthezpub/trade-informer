@@ -2,6 +2,7 @@ import asyncio
 import os
 import subprocess
 
+import redis.asyncio as aioredis
 # aigoram deps
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -18,6 +19,7 @@ from bot.schedulers.report_scheduler import ReportScheduler
 from core.adapters.moex_price_provider import MoexPriceProvider
 from core.adapters.telegram_notifier import TelegramNotifier
 from core.services.position_monitor import PositionMonitor
+from infrastructure.cache.redis_cache import RedisCache
 from infrastructure.database.adapters.postgresql_database import PostgreSQLDatabase
 # db
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
@@ -27,26 +29,37 @@ load_dotenv()
 # constants
 bot_token = os.getenv('BOT_TOKEN')
 db_path = os.getenv('DB_PATH')
-notify_interval = int(os.getenv('NOTIFY_INTERVAL_SECS'))
+notify_interval = int(os.getenv('NOTIFY_INTERVAL_SECS', '1800'))
+
+# Redis constants
+redis_path = os.getenv('REDIS_PATH')
 
 # constants rate limit
-time_for_update_limit_in_secs = int(os.getenv('TIME_FOR_UPDATE_LIMIT_IN_SECS'))
-requests_per_limit = int(os.getenv('REQUEST_PER_LIMIT'))
+time_for_update_limit_in_secs = int(os.getenv('TIME_FOR_UPDATE_LIMIT_IN_SECS', '60'))
+requests_per_limit = int(os.getenv('REQUEST_PER_LIMIT', '5'))
 
 if not bot_token:
     raise ValueError('BOT_TOKEN is not set')
 if not db_path:
     raise ValueError('DB_PATH is not set')
+if not redis_path:
+    raise ValueError('REDIS_PATH is not set')
 
 db = PostgreSQLDatabase(database_path=db_path)
-
-price_provider = MoexPriceProvider()
-monitor = PositionMonitor(price_provider)
-notifier = TelegramNotifier()
 
 
 async def main() -> None:
     logger.debug("Инициализация приложения...")
+    logger.debug("Подключаемся к Redis...")
+    redis = aioredis.from_url(redis_path)
+
+    logger.debug("Инициализация компонентов...")
+    redis_cache = RedisCache(redis=redis)
+
+    price_provider = MoexPriceProvider(redis_cache=redis_cache)
+    monitor = PositionMonitor(price_provider)
+    notifier = TelegramNotifier()
+
     logger.debug("Создаём сессию...")
     session = await db.get_session()
 

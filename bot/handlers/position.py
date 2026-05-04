@@ -45,7 +45,7 @@ class PositionHandler:
                                  "через точку.")
             return
 
-        result = self.position_monitor.check_position_pnl(stock=stock, your_buy_price=buy_price,
+        result = await self.position_monitor.check_position_pnl(stock=stock, your_buy_price=buy_price,
                                                           stock_count=stock_count,
                                                           growth_threshold=take_profit,
                                                           loss_threshold=stop_loss)

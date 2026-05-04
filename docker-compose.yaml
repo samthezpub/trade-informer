@@ -7,8 +7,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs  # Копируем логи из контейнера на ПК
+    networks:
+      - trade-network
 
   db:
     image: postgres:16-alpine
@@ -21,10 +25,32 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-db}" ]
       interval: 10s
       timeout: 10s
       retries: 5
+    networks:
+      - trade-network
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --requirepass password
+    ports:
+      - "6379:6379"
+#    volumes:
+#      - ./redisdata:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "password", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - trade-network
+
+networks:
+  trade-network:
+    driver: bridge
 
 volumes:
   pgdata:
