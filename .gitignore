@@ -11,3 +11,6 @@ logs/
 
 redisdata/*
 redisdata
+
+prometheus/data/
+grafana/data/
