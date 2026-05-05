@@ -9,6 +9,9 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
 from loguru import logger
+# prometheus
+from prometheus_client import start_http_server
+from core.metrics import start_commands
 
 # handlers
 from bot.handlers.commands import CommandRouter
@@ -34,6 +37,9 @@ notify_interval = int(os.getenv('NOTIFY_INTERVAL_SECS', '1800'))
 # Redis constants
 redis_path = os.getenv('REDIS_PATH')
 
+# Prometheus
+prometheus_door_port = int(os.getenv('PROMETHEUS_DOOR_PORT'))
+
 # constants rate limit
 time_for_update_limit_in_secs = int(os.getenv('TIME_FOR_UPDATE_LIMIT_IN_SECS', '60'))
 requests_per_limit = int(os.getenv('REQUEST_PER_LIMIT', '5'))
@@ -44,12 +50,16 @@ if not db_path:
     raise ValueError('DB_PATH is not set')
 if not redis_path:
     raise ValueError('REDIS_PATH is not set')
+if not prometheus_door_port:
+    raise ValueError('PROMETHEUS_DOOR_PORT is not set')
 
 db = PostgreSQLDatabase(database_path=db_path)
 
-
 async def main() -> None:
     logger.debug("Инициализация приложения...")
+    logger.debug("Запускаем Prometheus к нам в приложение...")
+    start_http_server(prometheus_door_port)
+
     logger.debug("Подключаемся к Redis...")
     redis = aioredis.from_url(redis_path)
 

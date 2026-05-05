@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from core.metrics import start_commands
 from core.ports import UserRepository
 from infrastructure.database.models import User, Stock
 
@@ -20,6 +21,7 @@ class SQLAlchemyUserRepository(UserRepository):
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
+        start_commands.inc()
         return user
 
     async def get_all_users(self) -> List[User]:

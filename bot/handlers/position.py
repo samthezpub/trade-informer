@@ -1,9 +1,13 @@
+import time
+from datetime import datetime
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 from loguru import logger
 
 from core.adapters.telegram_notifier import TelegramNotifier
+from core.metrics import bot_response_time
 from core.services.position_monitor import PositionMonitor
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
 
@@ -23,6 +27,8 @@ class PositionHandler:
 
     async def add_position_coomand(self, message: Message):
         """Обработчик команды добавить позицию /add VTBR 93.91 8 growth% loss%"""
+
+        start = time.time()
         logger.debug("Запрос на добавление позиции")
         parts = message.text.split()
         if len(parts) < 4:
@@ -56,11 +62,17 @@ class PositionHandler:
                                                                         stock_data=stock_dict)
             logger.debug(f"Успешно добавили {stock} для пользователя {message.chat.id}")
             await message.answer(f"{stock} добавлен в портфель. (Цена покупки: {buy_price}. Кол-во: {stock_count})")
+            end = time.time()
+            bot_response_time.labels(command='/add').observe(end - start)
             return
         await message.answer(f"Не удалось найти {stock}")
         logger.debug(f"Не смогли найти {stock} для пользователя {message.chat.id}")
+        end = time.time()
+        bot_response_time.labels(command='/add').observe(end - start)
+        return
 
     async def remove_position(self, message: Message):
+        start = time.time()
         logger.debug("Запрос на удаление позиции из портфеля")
         parts = message.text.split()
         if len(parts) < 2:
@@ -80,6 +92,8 @@ class PositionHandler:
             await self.user_repository.remove_stock_from_user_by_telegram_id(telegram_id=str(message.chat.id),
                                                                              stock_id=position_id)
             await message.answer(f"Позиция с ID {position_id} успешно удалена")
+            end = time.time()
+            bot_response_time.labels(command='/remove').observe(end - start)
             logger.debug(f"Успешно удалили позицию {position_id} у пользователя {message.chat.id}")
 
         except Exception as e:

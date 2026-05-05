@@ -1,11 +1,10 @@
 import datetime
-import logging
 from datetime import timedelta
 
 import httpx
-import requests
 from loguru import logger
 
+from core.metrics import cache_hits, cache_misses, popular_tickers
 from core.ports import PriceProvider
 from infrastructure.cache.redis_cache import RedisCache
 
@@ -18,11 +17,13 @@ class MoexPriceProvider(PriceProvider):
     async def get_current_price(self, stock, date_from=datetime.date.today() - timedelta(days=1),
                                 date_to=datetime.date.today(),
                                 interval=24):
+        popular_tickers.labels(ticker=stock).observe(1)
         """Возвращает последнюю цену закрытия"""
         try:
             cache = await self.redis_cache.get(stock)
             if cache is not None:
                 logger.debug(f"Возвращаем закешированный price {cache['price']} для {stock}")
+                cache_hits.inc()
                 return cache['price']
 
             else:
@@ -31,7 +32,9 @@ class MoexPriceProvider(PriceProvider):
                     f'={date_to}&interval={interval}')
                 j = result.json()
 
-                data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1]['close']
+                cache_misses.inc()
+                data = [{k: r[i] for i, k in enumerate(j['candles']['columns'])} for r in j['candles']['data']][-1][
+                    'close']
                 await self.redis_cache.set(stock, {'price': data}, ttl=30)
                 return data
         except IndexError as e:

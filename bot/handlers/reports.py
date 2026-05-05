@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
@@ -5,6 +8,7 @@ from aiogram.types import Message
 from loguru import logger
 
 from core.adapters.telegram_notifier import TelegramNotifier
+from core.metrics import bot_response_time
 from core.services.position_monitor import PositionMonitor
 from infrastructure.repositories.user_repo import SQLAlchemyUserRepository
 
@@ -22,6 +26,7 @@ class ReportHandler:
         self.router.message(Command(commands=['report']))(self.generate_report)
 
     async def generate_report(self, message: Message):
+        start = time.time()
         logger.debug("Начинается генерация отчёта")
         chat_id = str(message.chat.id)
         logger.debug("Запросили позиции пользователя")
@@ -51,5 +56,7 @@ class ReportHandler:
             logger.debug("По позициям пользователя нет результатов. Рекомендуется проверка")
             return
 
+        end = time.time()
+        bot_response_time.labels(command='/report').observe(end - start)
         formatted_message = self.notifier.format_report(results)
         await message.answer(formatted_message, parse_mode=ParseMode.HTML)

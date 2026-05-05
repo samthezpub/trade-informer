@@ -1,6 +1,7 @@
 services:
   bot:
     build: .
+    container_name: trade-bot
     env_file:
       - .env.docker
     restart: always
@@ -8,6 +9,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      prometheus:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs  # Копируем логи из контейнера на ПК
@@ -37,8 +40,8 @@ services:
     command: redis-server --requirepass password
     ports:
       - "6379:6379"
-#    volumes:
-#      - ./redisdata:/data
+    #    volumes:
+    #      - ./redisdata:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "password", "ping" ]
       interval: 30s
@@ -48,9 +51,47 @@ services:
     networks:
       - trade-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/etc:/etc/prometheus/
+      - ./prometheus/data:/prometheus
+    container_name: prometheus
+    hostname: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - ${PROMETHEUS_DOOR_PORT}:9090
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - trade-network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    networks:
+      - trade-network
+
 networks:
   trade-network:
     driver: bridge
 
 volumes:
   pgdata:
+  grafana-storage: { }

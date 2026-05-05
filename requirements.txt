@@ -1,5 +1,4 @@
 aiogram==3.27.0
-booktype==1.5
 httpx==0.28.1
 loguru==0.7.3
 python-dotenv==1.2.2
@@ -54,3 +53,5 @@ tzdata==2026.1
 urllib3==2.6.3
 win32_setctime==1.2.0
 yarl==1.23.0
+
+prometheus-client==0.25.0
