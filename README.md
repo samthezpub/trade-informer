@@ -63,6 +63,21 @@ trade-informer/
 4.  Примените миграции: `alembic upgrade head`
 5.  Запустите бота: `python bot/main.py`
 
+## Мониторинг и наблюдаемость
+
+| Метрика | Тип | Описание |
+|--------|------|----------|
+| `start_commands` | Counter | Общее количество пользователей, запустивших бота |
+| `bot_response_time` | Histogram | Время ответа бота в разрезе команд (`/start`, `/add`, `/remove`, `/report`) |
+| `popular_tickers` | Counter | Популярность тикеров (как часто запрашивают конкретную акцию) |
+| `cache_hits` | Counter | Количество попаданий в кеш Redis |
+| `cache_misses` | Counter | Количество прямых запросов к MOEX API |
+
+### Дашборд Grafana
+
+![Дашборд Grafana](https://github.com/samthezpub/trade-informer/blob/master/usage-examples-png/grafana-metrics.png)
+
+
 ## Демонстрация работы
 После запуска бот готов к работе. Вот как выглядит добавление позиции и получение сводного отчёта.
 
@@ -89,6 +104,7 @@ trade-informer/
 - **Бот:** aiogram 3.x
 - **База данных:** PostgreSQL + SQLAlchemy (асинхронный режим) + Alembic (синхронный)
 - **Кеширование:** Redis (через `redis-py`)
+- **Мониторинг:** Prometheus + Grafana, prometheus_client
 - **Логирование:** Loguru (структурированное, с ротацией)
 - **Тестирование:** Pytest
 - **Контейнеризация:** Docker + Docker Compose
@@ -105,6 +121,7 @@ trade-informer/
 - [x] Docker (запуск одной командой).
 - [x] Юнит-тесты (проверка бизнес-логики).
 - [x] Кеширование (Redis)
+- [x] Мониторинг (Prometheus + Grafana)
 - [ ] Интеграция с другими источниками данных (новости, другие биржи).
 - [ ] Визуализация: фронтенд-дашборд.
 - [ ] ИИ-советник на базе локальной LLM для анализа портфеля.
